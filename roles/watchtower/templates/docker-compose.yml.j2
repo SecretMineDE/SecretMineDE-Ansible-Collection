@@ -1,0 +1,20 @@
+services:
+  watchtower:
+    image: {{ watchtower_image }}
+    restart: always
+    ports:
+      - {{ watchtower_listen_address }}:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - {{ watchtower_docker_config }}:/config.json
+    environment:
+      WATCHTOWER_NOTIFICATIONS_HOSTNAME: "{{ watchtower_notifications_hostname }}"
+      WATCHTOWER_NOTIFICATION_URL: "{{ watchtower_notifications_url }}"
+      WATCHTOWER_CLEANUP: "{{ watchtower_cleanup | string | lower }}"
+      WATCHTOWER_SCHEDULE: "{{ watchtower_schedule }}"
+      WATCHTOWER_ROLLING_RESTART: "true"
+      WATCHTOWER_HTTP_API_METRICS: "true"
+      WATCHTOWER_HTTP_API_TOKEN: "{{ watchtower_api_token }}"
+      TZ: "Europe/Berlin"
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"

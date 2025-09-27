@@ -1,0 +1,33 @@
+{
+        email "{{ caddy_email }}"
+{% if caddy_metrics_enabled %}
+        servers {
+                metrics
+        }
+{% endif %}
+}
+
+(logging) {
+    log access-json-{args[0]} {
+        output file {{ caddy_log_dir }}/{args[0]}.json.log {
+                        roll_size     50M
+                        roll_keep     10
+                        roll_keep_for 30d
+                }
+        format json
+    }
+    log access-formatted-{args[0]} {
+        output file {{ caddy_log_dir }}/{args[0]}.console.log {
+                roll_size 50M
+                roll_keep 5
+                roll_keep_for 30d
+        }
+        format console
+    }
+}
+
+:80 {
+        respond "{{ caddy_direct_response }}" {{ caddy_direct_response_code }}
+}
+
+import domains/*.caddyfile

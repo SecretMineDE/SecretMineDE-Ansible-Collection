@@ -1,0 +1,32 @@
+---
+
+- name: "Dist-Upgrade"
+  apt:
+    update_cache: yes
+    upgrade: dist
+
+- name: "Autoremove and cleanup"
+  apt:
+    autoremove: yes
+    autoclean: yes
+  when:
+    - "update_autoremove"
+
+- name: "Check if reboot file exists"
+  stat:
+    path: "/var/run/reboot-required"
+  register: p
+
+- name: "Output required reboot"
+  debug:
+    msg:
+    - "Reboot required: {{ p.stat.exists }}"
+    - "Reboot allowed: {{ update_reboot_allowed }}"
+
+- name: "Reboot Host"
+  reboot:
+    msg: "Reboot initiated by Ansible"
+    post_reboot_delay: 10
+  when:
+    - "p.stat.exists"
+    - "update_reboot_allowed"

@@ -1,0 +1,99 @@
+---
+- name: "Output os vars"
+  debug:
+    msg:
+      - "Disto: {{ ansible_distribution }}"
+      - "Version: {{ ansible_distribution_major_version }}"
+
+- name: "Check Debian version"
+  meta: end_host
+  when:
+    - "ansible_distribution != 'Debian' or ansible_distribution_major_version != '12'"
+
+- name: "Assert preconditions"
+  ansible.builtin.assert:
+    that:
+      - "item.size_available > (2 * 1024 * 1024 * 1024)"
+      - "os_upgrade_allowed"
+    fail_msg: "Free disk space on {{ item.mount }} is below 2 GiB"
+  loop: "{{ ansible_mounts }}"
+  when: item.mount == "/"
+
+- name: "Dist-Upgrade"
+  apt:
+    update_cache: yes
+    upgrade: dist
+
+- name: "Autoremove and cleanup"
+  apt:
+    autoremove: yes
+    autoclean: yes
+
+- name: "Check if reboot file exists"
+  stat:
+    path: "/var/run/reboot-required"
+  register: reboot_flag_file
+
+- name: "Reboot Host"
+  reboot:
+    msg: "Reboot initiated by Ansible"
+    post_reboot_delay: 10
+  when:
+    - "reboot_flag_file.stat.exists"
+
+
+- name: "Change main sources.list from bookworm to trixie"
+  ansible.builtin.replace:
+    path: /etc/apt/sources.list
+    regexp: 'bookworm'
+    replace: 'trixie'
+
+- name: "List additional repo files"
+  ansible.builtin.find:
+    paths: /etc/apt/sources.list.d
+    patterns: '*'
+    recurse: no
+  register: sources_list_d
+
+- name: "Change additional sources.list from bookworm to trixie"
+  ansible.builtin.replace:
+    path: "{{ item.path }}"
+    regexp: 'bookworm'
+    replace: 'trixie'
+  loop: "{{ sources_list_d.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: "Run upgrade"
+  apt:
+    upgrade: dist
+    update_cache: yes
+
+- name: "Gather facts post-upgrade"
+  ansible.builtin.setup:
+
+- name: "Check if upgrade succeeded"
+  assert:
+    that:
+      - ansible_distribution_major_version == '13'
+    fail_msg: "Upgrade to Debian 13 failed"
+
+- name: "Run apt cleanup"
+  apt:
+    autoremove: yes
+    autoclean: yes
+
+- name: "Reboot Host"
+  reboot:
+    msg: "Reboot initiated by Ansible"
+    post_reboot_delay: 10
+
+
+#- name: Modernize apt sources
+#  ansible.builtin.command:
+#    cmd: apt -y modernize-sources
+#  become: yes
+
+#- name: Pause for 5 minutes for staggered upgrades
+#  pause:
+#    minutes: 5

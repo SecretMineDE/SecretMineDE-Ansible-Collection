@@ -1,0 +1,8 @@
+- name: "Check state of /etc/caddy/Caddyfile"
+  ansible.builtin.stat:
+    path: "/etc/caddy/Caddyfile"
+  register: caddyfile_system
+
+- name: "Set installation method"
+  ansible.builtin.set_fact:
+    caddy_installation: "{{ caddyfile_system.stat.exists | ternary('system', 'docker') }}"

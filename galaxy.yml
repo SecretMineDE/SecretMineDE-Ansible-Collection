@@ -1,0 +1,12 @@
+namespace: secretmine
+name: infra
+version: 1.0.0
+readme: README.md
+authors:
+- SecretMineDE <info@secretmine.de>
+description: My Ansible Collection
+tags: []
+build_ignore: []
+dependencies: {}
+documentation: https://github.com/SecretMineDE/SecretMineDE-Ansible-Collection
+homepage: https://github.com/SecretMineDE/SecretMineDE-Ansible-Collection

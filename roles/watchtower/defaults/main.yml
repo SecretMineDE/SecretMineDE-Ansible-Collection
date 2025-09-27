@@ -1,0 +1,10 @@
+watchtower_enabled: true
+watchtower_folder: "/opt/docker/watchtower"
+watchtower_image: nickfedor/watchtower:latest
+watchtower_docker_config: "/root/.docker/config.json"
+watchtower_notifications_hostname: "{{ inventory_hostname }}"
+watchtower_notifications_url: ""
+watchtower_cleanup: true
+watchtower_schedule: "0 {{ 60 | random(seed=inventory_hostname) }} {{ 7 | random(start=1, seed=inventory_hostname) }} * * *"
+watchtower_api_token: "{{ lookup('ansible.builtin.password', '/dev/null', chars=['ascii_letters', 'digits'], seed=inventory_hostname) }}"
+watchtower_listen_address: "9101"

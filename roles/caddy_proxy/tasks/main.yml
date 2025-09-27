@@ -1,0 +1,53 @@
+- name: "Run installation detection"
+  include_tasks: "detect_installation.yml"
+  when: "caddy_installation == 'unknown'"
+
+- name: "split proxy_domains by domain"
+  ansible.builtin.set_fact:
+    proxy_domains_dict: "{{ proxy_domains_dict | default({}) | combine({ item.host.split('.')[-2:] | join('.'): [item] }, list_merge='append') }}"
+  loop: "{{ caddy_proxy_domains }}"
+  loop_control:
+    label: "{{ item.host }}"
+
+- name: "Create dirs"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: "directory"
+  loop:
+    - "{{ caddyfile_location }}"
+    - "{{ caddyfile_location }}/domains"
+
+- name: "Write main template"
+  ansible.builtin.template:
+    src: "templates/caddyfile_base.j2"
+    dest: "{{ caddyfile_location }}/Caddyfile"
+  notify:
+    - "Restart caddy"
+
+- name: "List domain files"
+  ansible.builtin.find:
+    paths: "{{ caddyfile_location }}/domains"
+  register: domain_files_current
+
+- name: "Cleanup domain files"
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ domain_files_current.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+  when: "item.path | basename | replace('.caddyfile', '') not in proxy_domains_dict.keys()"
+  notify:
+    - "Restart caddy"
+
+- name: "Write domain templates"
+  vars:
+    proxy_hosts: "{{ item.value }}"
+  ansible.builtin.template:
+    src: "templates/caddyfile_domain.j2"
+    dest: "{{ caddyfile_location }}/domains/{{ item.key }}.caddyfile"
+  loop: "{{ proxy_domains_dict | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  notify:
+    - "Restart caddy"

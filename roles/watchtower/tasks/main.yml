@@ -1,0 +1,21 @@
+
+- name: "Ensure directories exist"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: "directory"
+  loop:
+    - "{{ watchtower_docker_config | dirname }}"
+    - "{{ watchtower_folder }}"
+
+- name: "Ensure docker config exists"
+  ansible.builtin.file:
+    path: "{{ watchtower_docker_config }}"
+    state: touch
+  changed_when: false
+
+- name: "Deploy docker-compose"
+  ansible.builtin.template:
+    src: "docker-compose.yml.j2"
+    dest: "{{ watchtower_folder }}/docker-compose.yml"
+  notify: "Restart compose stack"
+

@@ -1,0 +1,4 @@
+---
+
+- name: "Restart caddy"
+  include_tasks: "restart_{{ caddy_installation }}.yml"

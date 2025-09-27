@@ -1,0 +1,8 @@
+---
+autoupdate_enabled: false
+autoupdate_reboot_enabled: false
+autoupdate_reboot_time: "04:00"
+autoupdate_autoremove: false
+autoupdate_origins:
+  - origin: ""
+  - origin: "*"

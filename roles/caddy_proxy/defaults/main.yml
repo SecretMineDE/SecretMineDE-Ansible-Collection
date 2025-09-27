@@ -1,0 +1,37 @@
+
+caddy_docker_location: "/opt/docker/caddy"
+caddy_config_locations:
+  system: "/etc/caddy"
+  docker: "{{ caddy_docker_location }}/config"
+
+
+caddy_installation: unknown # can be system or docker
+caddy_config_location: "{{ caddy_config_locations[caddy_installation] }}"
+caddyfile_location: "{{ caddy_config_location }}"
+caddy_email: "me@example.com"
+caddy_metrics_enabled: true
+caddy_metrics_host: ":9080"
+caddy_direct_response: "Nothing to see here..."
+caddy_direct_response_code: 403
+caddy_log_dirs:
+  system: "/var/log/caddy"
+  docker: "{{ caddy_docker_location }}/log"
+caddy_log_dir: "{{ caddy_log_dirs[caddy_installation] }}"
+
+
+
+caddy_proxy_domains: []
+# - host: "subdomain.example.com"
+#   target: 192.168.1.2
+#   ignore_ssl: false # required for backends with self signed certs
+#   basic_auth:
+#     user: pw # pw can also be bcrypt hashed
+#   logging_enabled: true
+#   additional_config: |
+#     handle_path /push/* {
+#       reverse_proxy http://192.168.1.2:7867
+#     }
+
+
+
+caddy_additional_config: ""

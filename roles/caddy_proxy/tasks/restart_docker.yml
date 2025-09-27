@@ -1,0 +1,6 @@
+---
+- name: "Restart caddy container"
+  ansible.builtin.command:
+    chdir: "{{ caddy_docker_location }}"
+    cmd: docker compose restart
+

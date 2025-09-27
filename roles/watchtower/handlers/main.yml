@@ -1,0 +1,5 @@
+
+- name: "Restart compose stack"
+  ansible.builtin.shell:
+    cmd: "docker compose up -d --pull always"
+    chdir: "{{ watchtower_folder }}"
